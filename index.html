@@ -144,12 +144,12 @@ function updateGrassByMoves() {
       let cell = grid[r][c];
       if (cell.dataset.type === 'grass' && cell.dataset.mowedAt !== null) {
         let age = moveCount - parseInt(cell.dataset.mowedAt);
-        if (age >= 900) {
+        if (age >= 100) {
           cell.dataset.state = 0;
           cell.dataset.mowedAt = null;
           cell.classList.remove('grass-0','grass-1','grass-2');
           cell.classList.add('grass-0');
-        } else if (age >= 500 && cell.dataset.state === '2') {
+        } else if (age >= 50 && cell.dataset.state === '2') {
           cell.dataset.state = 1;
           cell.classList.remove('grass-0','grass-1','grass-2');
           cell.classList.add('grass-1');
