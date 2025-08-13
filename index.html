@@ -184,9 +184,9 @@ function updateStats() {
   if(avgVisits>2) mood='😕 Немного расстроен';
   if(avgVisits>4) mood='😾 Плохое';
 
-  document.getElementById('moves').textContent = `🐱‍🌾 Ходов: ${moveCount}`;
+  document.getElementById('moves').textContent = `🐱‍🌾 Колбасных ходов: ${moveCount}`;
   document.getElementById('left').textContent = `🌿 Осталось покосить: ${leftPct}%`;
-  document.getElementById('mood').textContent = `😊 Настроение: ${mood}`;
+  document.getElementById('mood').textContent = `😊 Настроение у Паштета: ${mood}`;
 }
 
 function movePlayer() {
