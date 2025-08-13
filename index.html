@@ -165,8 +165,19 @@ function updateGrassByMoves(){
       const cell=grid[r][c];
       if(cell.dataset.type==='grass' && cell.dataset.mowedAt){
         const age=moveCount-parseInt(cell.dataset.mowedAt||0);
-        if(age>=300){cell.dataset.state=0; cell.dataset.mowedAt=''; cell.classList.remove('grass-0','grass-1','grass-2'); cell.classList.add('grass-0');}
-        else if(age>=200 && cell.dataset.state==='2'){cell.dataset.state=1; cell.classList.remove('grass-0','grass-1','grass-2'); cell.classList.add('grass-1');}
+// старше 200 → 1, старше 300 → 0
+// заменяем на более медленные
+if(age>=2000){ // восстанавливается полностью
+  cell.dataset.state=0; 
+  cell.dataset.mowedAt=''; 
+  cell.classList.remove('grass-0','grass-1','grass-2'); 
+  cell.classList.add('grass-0');
+} else if(age>=1500 && cell.dataset.state==='2'){ // средняя стадия
+  cell.dataset.state=1; 
+  cell.classList.remove('grass-0','grass-1','grass-2'); 
+  cell.classList.add('grass-1');
+}
+
       }
     }
   }
