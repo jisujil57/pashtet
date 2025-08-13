@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Косилка травы с пиксель-арт</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #eef2e6;
+    overflow: hidden;
+    font-family: 'Comic Sans MS', sans-serif;
+  }
+
+  #header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 10;
+  }
+
+  #stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 16px;
+  }
+
+  #restartBtn {
+    background: #fff;
+    border: 2px solid #8bc34a;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  #restartBtn:hover {
+    background: #e6ffe6;
+  }
+
+  #game {
+    display: grid;
+    gap: 1px;
+    position: absolute;
+    top: 60px;
+    width: 100%;
+    height: calc(100% - 60px);
+  }
+
+  .cell {
+    width: 32px;
+    height: 32px;
+    background-size: cover;
+  }
+  .grass-0 { background-image: url('assets/grass_0.png'); }
+  .grass-1 { background-image: url('assets/grass_1.png'); }
+  .grass-2 { background-image: url('assets/grass_2.png'); }
+  .tree { background-image: url('assets/tree.png'); }
+  .player { 
+    background-image: url('assets/player.png'); 
+    transition: transform 0.2s;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <div id="stats">
+    <span id="moves">🐱‍🌾 Ходов: 0</span>
+    <span id="left">🌿 Осталось покосить: 100%</span>
+    <span id="mood">😺 Настроение: Отличное</span>
+  </div>
+  <button id="restartBtn">Рестарт</button>
+</div>
+
+<div id="game"></div>
+
+<script>
+let cellSize = 32;
+let cols = Math.floor(window.innerWidth / cellSize);
+let rows = Math.floor((window.innerHeight - 60) / cellSize);
+
+const game = document.getElementById('game');
+const restartBtn = document.getElementById('restartBtn');
+
+game.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+game.style.gridTemplateRows = `repeat(${rows}, ${cellSize}px)`;
+
+let grid = [];
+let visitCount = [];
+let player = { r: Math.floor(rows/2), c: Math.floor(cols/2), dir: 'left' };
+let moveCount = 0;
+
+function initField() {
+  game.innerHTML = '';
+  grid = [];
+  visitCount = [];
+  for (let r = 0; r < rows; r++) {
+    grid[r] = [];
+    visitCount[r] = [];
+    for (let c = 0; c < cols; c++) {
+      visitCount[r][c] = 0;
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+
+      if (Math.random() < 0.03) {
+        cell.dataset.type = 'tree';
+        cell.classList.add('tree');
+      } else {
+        cell.dataset.type = 'grass';
+        cell.dataset.state = 0;
+        cell.dataset.mowedAt = null;
+        cell.classList.add('grass-0');
+      }
+
+      game.appendChild(cell);
+      grid[r][c] = cell;
+    }
+  }
+
+  player.r = Math.floor(rows/2);
+  player.c = Math.floor(cols/2);
+  moveCount = 0;
+  grid[player.r][player.c].classList.add('player');
+  grid[player.r][player.c].style.transform = 'rotate(0deg)';
+  updateStats();
+}
+
+function updateGrassByMoves() {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let cell = grid[r][c];
+      if (cell.dataset.type === 'grass' && cell.dataset.mowedAt !== null) {
+        let age = moveCount - parseInt(cell.dataset.mowedAt);
+        if (age >= 100) {
+          cell.dataset.state = 0;
+          cell.dataset.mowedAt = null;
+          cell.classList.remove('grass-0','grass-1','grass-2');
+          cell.classList.add('grass-0');
+        } else if (age >= 50 && cell.dataset.state === '2') {
+          cell.dataset.state = 1;
+          cell.classList.remove('grass-0','grass-1','grass-2');
+          cell.classList.add('grass-1');
+        }
+      }
+    }
+  }
+}
+
+function updateStats() {
+  let totalGrass=0, mowed=0;
+  for (let r=0; r<rows; r++){
+    for (let c=0; c<cols; c++){
+      if(grid[r][c].dataset.type==='grass'){
+        totalGrass++;
+        if(grid[r][c].dataset.state==='2') mowed++;
+      }
+    }
+  }
+
+  let leftPct = totalGrass ? ((totalGrass - mowed)/totalGrass*100).toFixed(1) : 0;
+
+  // Настроение Паштета
+  let totalVisits = 0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(grid[r][c].dataset.type==='grass') totalVisits += visitCount[r][c];
+    }
+  }
+  let avgVisits = totalGrass ? totalVisits/totalGrass : 0;
+  let mood = '😺 Отличное';
+  if(avgVisits>2) mood='😕 Немного расстроен';
+  if(avgVisits>4) mood='😾 Плохое';
+
+  document.getElementById('moves').textContent = `🐱‍🌾 Ходов: ${moveCount}`;
+  document.getElementById('left').textContent = `🌿 Осталось покосить: ${leftPct}%`;
+  document.getElementById('mood').textContent = `😊 Настроение: ${mood}`;
+}
+
+function movePlayer() {
+  const dirs = [
+    { dr:0, dc:1, dir:'right'},
+    { dr:0, dc:-1, dir:'left'},
+    { dr:1, dc:0, dir:'down'},
+    { dr:-1, dc:0, dir:'up'}
+  ];
+  dirs.sort(() => Math.random() - 0.5);
+
+  for (let {dr, dc, dir} of dirs) {
+    let newR = player.r + dr;
+    let newC = player.c + dc;
+    if (newR<0||newR>=rows||newC<0||newC>=cols) continue;
+
+    let target = grid[newR][newC];
+    if(target.dataset.type==='tree') continue;
+
+    let oldCell = grid[player.r][player.c];
+    oldCell.classList.remove('player');
+    if(oldCell.dataset.type==='grass') oldCell.classList.add('grass-'+oldCell.dataset.state);
+
+    player.r=newR;
+    player.c=newC;
+    player.dir=dir;
+    let rotation={left:0,right:180,up:90,down:270}[dir];
+    target.classList.add('player');
+    target.style.transform=`rotate(${rotation}deg)`;
+
+    // Отмечаем посещение для настроения
+    visitCount[player.r][player.c]++;
+
+    if(target.dataset.type==='grass') {
+      target.dataset.state=2;
+      target.dataset.mowedAt=moveCount;
+      target.classList.remove('grass-0','grass-1','grass-2');
+      target.classList.add('grass-2');
+    }
+
+    moveCount++;
+    updateGrassByMoves();
+    updateStats();
+    break;
+  }
+}
+
+setInterval(movePlayer, 500);
+
+restartBtn.addEventListener('click', () => {
+  initField();
+});
+
+initField();
+</script>
+</body>
+</html>
