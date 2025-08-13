@@ -22,53 +22,45 @@ button {
   font-weight: 600;
   transition: background-color 0.2s, transform 0.1s;
 }
+button:hover { background-color: #45a049; }
+button:active { transform: translateY(1px); background-color: #3e8e41; }
 
-button:hover {
-  background-color: #45a049;
+/* game */
+#game{display:grid;gap:1px;position:absolute;top:64px;left:0;width:100%;height:calc(100% - 64px);box-sizing:border-box}
+.cell{position:relative;background-size:cover;overflow:hidden}
+.cell::before{content:"";position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;}
+.grass-0::before{background-image:url('assets/grass_0.png')}
+.grass-1::before{background-image:url('assets/grass_1.png')}
+.grass-2::before{background-image:url('assets/grass_2.png')}
+.tree::before{background-image:url('assets/tree.png');background-size:contain;background-repeat:no-repeat}
+
+/* overlay player sprite */
+.cell[data-occupant]::after{
+  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70%;height:70%;
+  background-image:url('assets/player.png');background-size:contain;background-repeat:no-repeat;background-position:center;
+  z-index:2;pointer-events:none;border-radius:4px;
+  transition: transform 150ms linear; /* плавный поворот */
 }
 
-button:active {
-  transform: translateY(1px);
-  background-color: #3e8e41;
+/* Поворот по направлению движения (все держат translate в начале) */
+.cell[data-dir="right"]::after{ transform: translate(-50%,-50%) rotate(0deg) scaleX(1); }
+.cell[data-dir="left"]::after{  transform: translate(-50%,-50%) rotate(0deg) scaleX(-1); }
+.cell[data-dir="down"]::after{  transform: translate(-50%,-50%) rotate(90deg); }
+.cell[data-dir="up"]::after{    transform: translate(-50%,-50%) rotate(-90deg); }
+
+/* highlights per type */
+.cell[data-occupant="pash"]::after{box-shadow:0 0 5px 2px rgba(0,0,0,0.15)}
+.cell[data-occupant="slavik"]::after{box-shadow:0 0 8px 3px rgba(255,193,7,0.45);filter:hue-rotate(10deg) saturate(1.1)}
+.cell[data-occupant="tema"]::after{box-shadow:0 0 8px 3px rgba(33,150,243,0.45);filter:hue-rotate(200deg) saturate(1.1)}
+.cell[data-occupant="kirya"]::after{box-shadow:0 0 8px 3px rgba(158,158,158,0.45);filter:grayscale(0.6) saturate(0.7)}
+
+/* spawn pulse — НЕ трогаем transform, чтобы не ломать поворот */
+.cell.spawn::after{animation:spawnPulse 900ms ease}
+@keyframes spawnPulse{
+  0%   { opacity: 0; box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+  50%  { opacity: 1; box-shadow: 0 0 14px 6px rgba(0,0,0,0.12); }
+  100% { opacity: 1; box-shadow: 0 0 5px 2px rgba(0,0,0,0.12); }
 }
-
-
-  /* game */
-  #game{display:grid;gap:1px;position:absolute;top:64px;left:0;width:100%;height:calc(100% - 64px);box-sizing:border-box}
-  .cell{position:relative;background-size:cover;overflow:hidden}
-  .cell::before{content:"";position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;}
-  .grass-0::before{background-image:url('assets/grass_0.png')}
-  .grass-1::before{background-image:url('assets/grass_1.png')}
-  .grass-2::before{background-image:url('assets/grass_2.png')}
-  .tree::before{background-image:url('assets/tree.png');background-size:contain;background-repeat:no-repeat}
-
-  /* overlay player sprite */
-  .cell[data-occupant]::after{
-    content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70%;height:70%;
-    background-image:url('assets/player.png');background-size:contain;background-repeat:no-repeat;background-position:center;
-    z-index:2;pointer-events:none;border-radius:4px;
-    transition: transform 150ms linear; /* плавный поворот */
-  }
-
-  /* Поворот по направлению движения (все держат translate в начале) */
-  .cell[data-dir="right"]::after{ transform: translate(-50%,-50%) rotate(0deg) scaleX(1); }
-  .cell[data-dir="left"]::after{  transform: translate(-50%,-50%) rotate(0deg) scaleX(-1); }
-  .cell[data-dir="down"]::after{  transform: translate(-50%,-50%) rotate(90deg); }
-  .cell[data-dir="up"]::after{    transform: translate(-50%,-50%) rotate(-90deg); }
-
-  /* highlights per type */
-  .cell[data-occupant="pash"]::after{box-shadow:0 0 5px 2px rgba(0,0,0,0.15)}
-  .cell[data-occupant="slavik"]::after{box-shadow:0 0 8px 3px rgba(255,193,7,0.45);filter:hue-rotate(10deg) saturate(1.1)}
-  .cell[data-occupant="tema"]::after{box-shadow:0 0 8px 3px rgba(33,150,243,0.45);filter:hue-rotate(200deg) saturate(1.1)}
-  .cell[data-occupant="kirya"]::after{box-shadow:0 0 8px 3px rgba(158,158,158,0.45);filter:grayscale(0.6) saturate(0.7)}
-
-  /* spawn pulse — НЕ трогаем transform, чтобы не ломать поворот */
-  .cell.spawn::after{animation:spawnPulse 900ms ease}
-  @keyframes spawnPulse{
-    0%   { opacity: 0; box-shadow: 0 0 0 0 rgba(0,0,0,0); }
-    50%  { opacity: 1; box-shadow: 0 0 14px 6px rgba(0,0,0,0.12); }
-    100% { opacity: 1; box-shadow: 0 0 5px 2px rgba(0,0,0,0.12); }
-  }
 </style>
 </head>
 <body>
@@ -84,6 +76,10 @@ button:active {
   <div id="controls">
     <button id="restartBtn">Рестарт</button>
     <button id="friendBtn">Позвать друга</button>
+    <label style="display:flex;align-items:center;gap:4px">
+      ⚡ Скорость:
+      <input type="range" id="speedSlider" min="1" max="5" value="1">
+    </label>
   </div>
 </div>
 
@@ -98,8 +94,6 @@ const friendBtn = document.getElementById('friendBtn');
 const friendInfo = document.getElementById('friendInfo');
 
 let grid=[], visitCount=[], moveCount=0;
-
-/* игроки: первый всегда Паштет, по умолчанию смотрит вправо */
 let players = [{id:'pash', type:'pash', r:0, c:0, dir:'right'}];
 
 const FRIEND_META = {
@@ -165,19 +159,16 @@ function updateGrassByMoves(){
       const cell=grid[r][c];
       if(cell.dataset.type==='grass' && cell.dataset.mowedAt){
         const age=moveCount-parseInt(cell.dataset.mowedAt||0);
-// старше 200 → 1, старше 300 → 0
-// заменяем на более медленные
-if(age>=2000){ // восстанавливается полностью
-  cell.dataset.state=0; 
-  cell.dataset.mowedAt=''; 
-  cell.classList.remove('grass-0','grass-1','grass-2'); 
-  cell.classList.add('grass-0');
-} else if(age>=1500 && cell.dataset.state==='2'){ // средняя стадия
-  cell.dataset.state=1; 
-  cell.classList.remove('grass-0','grass-1','grass-2'); 
-  cell.classList.add('grass-1');
-}
-
+        if(age>=2000){
+          cell.dataset.state=0; 
+          cell.dataset.mowedAt=''; 
+          cell.classList.remove('grass-0','grass-1','grass-2'); 
+          cell.classList.add('grass-0');
+        } else if(age>=1500 && cell.dataset.state==='2'){
+          cell.dataset.state=1; 
+          cell.classList.remove('grass-0','grass-1','grass-2'); 
+          cell.classList.add('grass-1');
+        }
       }
     }
   }
@@ -234,12 +225,7 @@ function removeFriend(){
 }
 
 function moveOne(p){
-  const dirs=[
-    {dr:0,dc:1, name:'right'},
-    {dr:0,dc:-1,name:'left'},
-    {dr:1,dc:0, name:'down'},
-    {dr:-1,dc:0,name:'up'}
-  ];
+  const dirs=[{dr:0,dc:1,name:'right'},{dr:0,dc:-1,name:'left'},{dr:1,dc:0,name:'down'},{dr:-1,dc:0,name:'up'}];
   let movesPerTick=1; if(p.type==='tema') movesPerTick=2;
 
   if(p.type==='slavik'){
@@ -303,12 +289,27 @@ function moveOne(p){
   }
 }
 
-const TICK_MS=500;
-setInterval(()=>{
-  const snapshot=players.slice();
-  snapshot.forEach(p=>moveOne(p));
-},TICK_MS);
+// --- ускорение через ползунок ---
+let tickInterval = null;
+let baseTick = 500; // базовое время между ходами
+let speed = 1; // множитель скорости
 
+const speedSlider = document.getElementById('speedSlider');
+speedSlider.addEventListener('input', (e)=>{
+  speed = parseInt(e.target.value);
+  restartTick();
+});
+
+function restartTick(){
+  if(tickInterval) clearInterval(tickInterval);
+  const intervalTime = baseTick / speed;
+  tickInterval = setInterval(()=>{
+    const snapshot=players.slice();
+    snapshot.forEach(p=>moveOne(p));
+  }, intervalTime);
+}
+
+// кнопки и события
 restartBtn.addEventListener('click',()=>{initField();});
 friendBtn.addEventListener('click',()=>{
   if(friendPresent()) removeFriend();
@@ -316,7 +317,10 @@ friendBtn.addEventListener('click',()=>{
 });
 
 window.addEventListener('resize',()=>{initField();});
+
+// инициализация
 initField();
+restartTick();
 </script>
 
 </body>
